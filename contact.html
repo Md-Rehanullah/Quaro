@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - AnonQ&A Platform</title>
+    <meta name="description" content="Get in touch with the AnonQ&A team. Send feedback, report issues, or inquire about partnerships and collaboration opportunities.">
+    
+    <!-- Open Graph tags -->
+    <meta property="og:title" content="Contact Us - AnonQ&A Platform">
+    <meta property="og:description" content="Get in touch with the AnonQ&A team. Send feedback, report issues, or inquire about partnerships and collaboration opportunities.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://your-username.github.io/anonqa/contact.html">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-container">
+                <div class="nav-brand">
+                    <h1><i class="fas fa-question-circle"></i> AnonQ&A</h1>
+                </div>
+                <ul class="nav-menu">
+                    <li><a href="index.html" class="nav-link">Home</a></li>
+                    <li><a href="about.html" class="nav-link">About</a></li>
+                    <li><a href="contact.html" class="nav-link active">Contact</a></li>
+                    <li><a href="collaborate.html" class="nav-link">Collaborate</a></li>
+                </ul>
+                <div class="nav-toggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <section class="page-header">
+                <h1>Contact Us</h1>
+                <p class="lead">We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p>
+            </section>
+
+            <div class="contact-container">
+                <div class="contact-info">
+                    <h2>Get in Touch</h2>
+                    <p>Have questions, feedback, or suggestions? We're here to help make AnonQ&A better for everyone.</p>
+                    
+                    <div class="contact-methods">
+                        <div class="contact-method">
+                            <div class="method-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="method-content">
+                                <h3>Email Us</h3>
+                                <p>Send us an email for general inquiries</p>
+                                <a href="mailto:hello@anonqa.com">hello@anonqa.com</a>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-method">
+                            <div class="method-icon">
+                                <i class="fas fa-bug"></i>
+                            </div>
+                            <div class="method-content">
+                                <h3>Report Issues</h3>
+                                <p>Found a bug or technical problem?</p>
+                                <a href="mailto:support@anonqa.com">support@anonqa.com</a>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-method">
+                            <div class="method-icon">
+                                <i class="fas fa-handshake"></i>
+                            </div>
+                            <div class="method-content">
+                                <h3>Partnerships</h3>
+                                <p>Interested in collaborating with us?</p>
+                                <a href="mailto:partnerships@anonqa.com">partnerships@anonqa.com</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="response-time">
+                        <div class="response-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="response-content">
+                            <h4>Response Time</h4>
+                            <p>We typically respond within 24-48 hours during business days.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contact-form-section">
+                    <form id="contactForm" class="contact-form">
+                        <div class="form-group">
+                            <label for="contactName">Name (Optional)</label>
+                            <input type="text" id="contactName" name="name" placeholder="Your name">
+                            <small class="form-hint">You can remain anonymous if you prefer</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="contactEmail">Email Address</label>
+                            <input type="email" id="contactEmail" name="email" required placeholder="your.email@example.com">
+                            <small class="form-hint">Required for us to respond to your message</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="contactSubject">Subject</label>
+                            <select id="contactSubject" name="subject" required>
+                                <option value="">Select a subject</option>
+                                <option value="general">General Inquiry</option>
+                                <option value="feedback">Feedback</option>
+                                <option value="bug">Bug Report</option>
+                                <option value="feature">Feature Request</option>
+                                <option value="partnership">Partnership</option>
+                                <option value="abuse">Report Abuse</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="contactMessage">Message</label>
+                            <textarea id="contactMessage" name="message" rows="6" required placeholder="Please describe your inquiry in detail..."></textarea>
+                        </div>
+                        
+                        <div class="form-group form-checkbox">
+                            <input type="checkbox" id="contactConsent" name="consent" required>
+                            <label for="contactConsent">I understand that my email will only be used to respond to this inquiry and will not be stored or used for marketing purposes.</label>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary btn-large">
+                                <i class="fas fa-paper-plane"></i> Send Message
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <section class="faq-section">
+                <h2>Frequently Asked Questions</h2>
+                <div class="faq-grid">
+                    <div class="faq-item">
+                        <h3><i class="fas fa-question-circle"></i> How does anonymity work?</h3>
+                        <p>We don't collect or store any personal information. Questions and answers are posted without any identifying information attached.</p>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <h3><i class="fas fa-database"></i> How is my data stored?</h3>
+                        <p>All questions and answers are stored locally in your browser. No data is sent to external servers for the basic functionality.</p>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <h3><i class="fas fa-shield-alt"></i> How do you handle inappropriate content?</h3>
+                        <p>We rely on community reporting. Users can report inappropriate content, which is then reviewed by our moderation team.</p>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <h3><i class="fas fa-mobile-alt"></i> Is the platform mobile-friendly?</h3>
+                        <p>Yes! AnonQ&A is designed to work seamlessly across all devices, from smartphones to desktop computers.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Success Message Modal -->
+    <div id="successModal" class="modal">
+        <div class="modal-content success-modal">
+            <div class="modal-header">
+                <h2><i class="fas fa-check-circle"></i> Message Sent!</h2>
+                <span class="close" onclick="hideSuccessModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Thank you for your message. We'll get back to you within 24-48 hours.</p>
+                <button class="btn btn-primary" onclick="hideSuccessModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>AnonQ&A</h3>
+                    <p>Empowering anonymous knowledge sharing</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="collaborate.html">Collaborate</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Connect</h4>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 AnonQ&A. Open source knowledge sharing platform.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/utils.js"></script>
+    <script>
+        // Mobile menu toggle
+        document.querySelector('.nav-toggle').addEventListener('click', function() {
+            document.querySelector('.nav-menu').classList.toggle('active');
+        });
+
+        // Contact form handling
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Simulate form submission
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            console.log('Contact form submitted:', data);
+            
+            // Show success message
+            document.getElementById('successModal').style.display = 'block';
+            
+            // Reset form
+            this.reset();
+        });
+
+        function hideSuccessModal() {
+            document.getElementById('successModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(e) {
+            const modal = document.getElementById('successModal');
+            if (e.target === modal) {
+                hideSuccessModal();
+            }
+        });
+    </script>
+</body>
+</html>
