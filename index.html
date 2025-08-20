@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AnonQ&A - Anonymous Questions & Answers Platform</title>
+    <meta name="description" content="Ask and answer questions anonymously without registration. Join our community-driven Q&A platform for knowledge sharing.">
+    
+    <!-- Open Graph tags -->
+    <meta property="og:title" content="AnonQ&A - Anonymous Questions & Answers Platform">
+    <meta property="og:description" content="Ask and answer questions anonymously without registration. Join our community-driven Q&A platform for knowledge sharing.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://your-username.github.io/anonqa">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-container">
+                <div class="nav-brand">
+                    <h1><i class="fas fa-question-circle"></i> AnonQ&A</h1>
+                </div>
+                <ul class="nav-menu">
+                    <li><a href="index.html" class="nav-link active">Home</a></li>
+                    <li><a href="about.html" class="nav-link">About</a></li>
+                    <li><a href="contact.html" class="nav-link">Contact</a></li>
+                    <li><a href="collaborate.html" class="nav-link">Collaborate</a></li>
+                </ul>
+                <div class="nav-toggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="container">
+                <h1>Ask Anything, Answer Everything</h1>
+                <p>Share knowledge anonymously in our open community platform</p>
+                <button class="btn btn-primary" onclick="showAskModal()">
+                    <i class="fas fa-plus"></i> Ask a Question
+                </button>
+            </div>
+        </section>
+
+        <!-- Question Form Modal -->
+        <div id="askModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Ask a Question</h2>
+                    <span class="close" onclick="hideAskModal()">&times;</span>
+                </div>
+                <form id="questionForm" class="question-form">
+                    <div class="form-group">
+                        <label for="questionTitle">Question Title</label>
+                        <input type="text" id="questionTitle" name="title" required maxlength="200" placeholder="What's your question?">
+                    </div>
+                    <div class="form-group">
+                        <label for="questionDetails">Details (Optional)</label>
+                        <textarea id="questionDetails" name="details" rows="4" placeholder="Provide more context or details..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="questionCategory">Category</label>
+                        <select id="questionCategory" name="category" required>
+                            <option value="">Select a category</option>
+                            <option value="technology">Technology</option>
+                            <option value="science">Science</option>
+                            <option value="education">Education</option>
+                            <option value="health">Health</option>
+                            <option value="lifestyle">Lifestyle</option>
+                            <option value="business">Business</option>
+                            <option value="general">General</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="hideAskModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Post Question</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Content Sections -->
+        <div class="container">
+            <!-- Filter and Sort -->
+            <section class="controls">
+                <div class="filters">
+                    <select id="categoryFilter" onchange="filterQuestions()">
+                        <option value="">All Categories</option>
+                        <option value="technology">Technology</option>
+                        <option value="science">Science</option>
+                        <option value="education">Education</option>
+                        <option value="health">Health</option>
+                        <option value="lifestyle">Lifestyle</option>
+                        <option value="business">Business</option>
+                        <option value="general">General</option>
+                    </select>
+                </div>
+                <div class="sort-tabs">
+                    <button class="tab-btn active" data-sort="trending" onclick="switchTab(this, 'trending')">
+                        <i class="fas fa-fire"></i> Trending
+                    </button>
+                    <button class="tab-btn" data-sort="latest" onclick="switchTab(this, 'latest')">
+                        <i class="fas fa-clock"></i> Latest
+                    </button>
+                </div>
+            </section>
+
+            <!-- Questions Container -->
+            <section class="questions-section">
+                <div id="questionsContainer" class="questions-container">
+                    <!-- Questions will be loaded here dynamically -->
+                </div>
+                
+                <!-- Empty State -->
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <i class="fas fa-comments"></i>
+                    <h3>No questions yet</h3>
+                    <p>Be the first to ask a question in this community!</p>
+                    <button class="btn btn-primary" onclick="showAskModal()">Ask First Question</button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Answer Modal -->
+    <div id="answerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Your Answer</h2>
+                <span class="close" onclick="hideAnswerModal()">&times;</span>
+            </div>
+            <div id="answerQuestionTitle" class="answer-question-title"></div>
+            <form id="answerForm" class="answer-form">
+                <div class="form-group">
+                    <label for="answerText">Your Answer</label>
+                    <textarea id="answerText" name="answer" rows="6" required placeholder="Share your knowledge..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="hideAnswerModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Post Answer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Report Modal -->
+    <div id="reportModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Report Content</h2>
+                <span class="close" onclick="hideReportModal()">&times;</span>
+            </div>
+            <form id="reportForm" class="report-form">
+                <div class="form-group">
+                    <label for="reportReason">Reason for reporting</label>
+                    <select id="reportReason" name="reason" required>
+                        <option value="">Select a reason</option>
+                        <option value="spam">Spam</option>
+                        <option value="inappropriate">Inappropriate content</option>
+                        <option value="harassment">Harassment</option>
+                        <option value="misinformation">Misinformation</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="reportDetails">Additional details (optional)</label>
+                    <textarea id="reportDetails" name="details" rows="3" placeholder="Provide more information about why you're reporting this content..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="hideReportModal()">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Submit Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>AnonQ&A</h3>
+                    <p>Empowering anonymous knowledge sharing</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="collaborate.html">Collaborate</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Connect</h4>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 AnonQ&A. Open source knowledge sharing platform.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/utils.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
