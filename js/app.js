@@ -333,10 +333,7 @@ class AnonQAApp {
       UIUtils.showToast('Failed to post answer. Please try again.', 'error');
     }
   }
-    }
-  }
 
-  // Handle report form submission
   // Handle report form submission (disabled - backend doesn't support reporting yet)
   handleReportSubmit(e) {
     e.preventDefault();
@@ -544,12 +541,8 @@ document.addEventListener('visibilitychange', function() {
 
 // Handle before unload for potential data backup
 window.addEventListener('beforeunload', function(e) {
-  // Could implement auto-backup functionality here
-  const stats = window.app ? window.app.storage.getStats() : null;
-  if (stats && stats.totalQuestions > 10) {
-    // Optional: warn users with significant data
-    // e.returnValue = 'You have questions and answers stored locally. Are you sure you want to leave?';
-  }
+  // Auto-backup functionality removed since we're using backend API now
+  // Could implement auto-sync or warn about unsaved data here if needed
 });
 
 // Service worker registration for PWA capabilities (optional)
@@ -566,7 +559,7 @@ window.addEventListener('online', function() {
 });
 
 window.addEventListener('offline', function() {
-  UIUtils.showToast('You are offline. Your data is saved locally.', 'info', 3000);
+  UIUtils.showToast('You are offline. Some features may not work.', 'warning', 3000);
 });
 
 // Export for potential testing
