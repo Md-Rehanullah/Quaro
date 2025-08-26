@@ -4,18 +4,26 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 
 const questionsRouter = require('./routes/questions');
+const reportsRouter = require('./routes/reports');
 
 const app = express();
 const PORT = process.env.PORT || 1000;
 
 // Middlewares
 app.use(cors({
-  origin: 'https://md-rehanullah.github.io'
+  origin: [
+    'https://md-rehanullah.github.io',
+    'http://localhost:3000',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'http://127.0.0.1:3000'
+  ]
 }));
 app.use(express.json());
 
 // Routes
 app.use('/api/questions', questionsRouter);
+app.use('/api/report', reportsRouter);
 
 // Root
 app.get('/', (req, res) => {

@@ -9,6 +9,7 @@ const API_CONFIG = {
   BASE_URL: 'https://quaro-1.onrender.com', // <-- UPDATED HERE
   ENDPOINTS: {
     QUESTIONS: '/api/questions',
+    REPORT: '/api/report',
   }
 };
 
@@ -159,6 +160,53 @@ class QuestionAPI {
     }
 
     return filtered;
+  }
+
+  /**
+   * Likes a question
+   * @param {string} questionId - Question ID
+   * @returns {Promise<object>} Updated vote counts
+   */
+  static async likeQuestion(questionId) {
+    return await API.post(`${API_CONFIG.ENDPOINTS.QUESTIONS}/${questionId}/like`);
+  }
+
+  /**
+   * Dislikes a question
+   * @param {string} questionId - Question ID
+   * @returns {Promise<object>} Updated vote counts
+   */
+  static async dislikeQuestion(questionId) {
+    return await API.post(`${API_CONFIG.ENDPOINTS.QUESTIONS}/${questionId}/dislike`);
+  }
+
+  /**
+   * Likes an answer
+   * @param {string} questionId - Question ID
+   * @param {string} answerId - Answer ID
+   * @returns {Promise<object>} Updated vote counts
+   */
+  static async likeAnswer(questionId, answerId) {
+    return await API.post(`${API_CONFIG.ENDPOINTS.QUESTIONS}/${questionId}/answers/${answerId}/like`);
+  }
+
+  /**
+   * Dislikes an answer
+   * @param {string} questionId - Question ID
+   * @param {string} answerId - Answer ID
+   * @returns {Promise<object>} Updated vote counts
+   */
+  static async dislikeAnswer(questionId, answerId) {
+    return await API.post(`${API_CONFIG.ENDPOINTS.QUESTIONS}/${questionId}/answers/${answerId}/dislike`);
+  }
+
+  /**
+   * Submits a report for inappropriate content
+   * @param {object} reportData - Report data (type, id, reason, details)
+   * @returns {Promise<object>} Report submission response
+   */
+  static async submitReport(reportData) {
+    return await API.post(API_CONFIG.ENDPOINTS.REPORT, reportData);
   }
 }
 

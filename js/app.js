@@ -142,13 +142,11 @@ class AnonQAApp {
     // Backend uses different field names, map them appropriately
     const questionId = question._id;
     const answers = question.answers || [];
+    const likes = question.likes || 0;
+    const dislikes = question.dislikes || 0;
     
     // Since backend doesn't store category, use a default one
     const categoryInfo = CategoryUtils.getCategoryInfo('general');
-    
-    // Backend doesn't store voting data, so we'll disable votes for now
-    // This could be enhanced later with a proper voting system
-    const userVote = null;
     
     return `
       <div class="question-card" data-question-id="${questionId}">
@@ -170,7 +168,16 @@ class AnonQAApp {
         ` : ''}
         
         <div class="question-actions">
-          <!-- Voting disabled for now since backend doesn't support it -->
+          <!-- Voting buttons -->
+          <div class="voting-section">
+            <button class="action-btn vote-btn like-btn" data-type="question" data-question-id="${questionId}" data-action="like">
+              <i class="fas fa-thumbs-up"></i> <span class="vote-count">${likes}</span>
+            </button>
+            <button class="action-btn vote-btn dislike-btn" data-type="question" data-question-id="${questionId}" data-action="dislike">
+              <i class="fas fa-thumbs-down"></i> <span class="vote-count">${dislikes}</span>
+            </button>
+          </div>
+          
           <span class="action-info">
             <i class="fas fa-comments"></i> ${answers.length} Answer${answers.length !== 1 ? 's' : ''}
           </span>
@@ -183,7 +190,9 @@ class AnonQAApp {
             <i class="fas fa-share"></i> Share
           </button>
           
-          <!-- Reporting disabled for now since backend doesn't support it -->
+          <button class="action-btn report-btn" data-type="question" data-question-id="${questionId}">
+            <i class="fas fa-flag"></i> Report
+          </button>
         </div>
         
         ${answers.length > 0 ? this.renderAnswersSection(questionId, answers) : ''}
@@ -200,16 +209,18 @@ class AnonQAApp {
         </div>
         
         <div class="answers-container">
-          ${answers.map(answer => this.renderAnswer(answer)).join('')}
+          ${answers.map(answer => this.renderAnswer(answer, questionId)).join('')}
         </div>
       </div>
     `;
   }
 
   // Render a single answer
-  renderAnswer(answer) {
+  renderAnswer(answer, questionId) {
     // Backend answer format uses _id and different field names
     const answerId = answer._id;
+    const likes = answer.likes || 0;
+    const dislikes = answer.dislikes || 0;
     
     return `
       <div class="answer-card" data-answer-id="${answerId}">
@@ -220,7 +231,21 @@ class AnonQAApp {
         <div class="answer-meta">
           <span class="answer-time">${TimeUtils.getRelativeTime(answer.createdAt)}</span>
           
-          <!-- Answer voting and reporting disabled for now since backend doesn't support it -->
+          <!-- Answer voting and reporting -->
+          <div class="answer-actions">
+            <div class="voting-section">
+              <button class="action-btn vote-btn like-btn" data-type="answer" data-question-id="${questionId}" data-answer-id="${answerId}" data-action="like">
+                <i class="fas fa-thumbs-up"></i> <span class="vote-count">${likes}</span>
+              </button>
+              <button class="action-btn vote-btn dislike-btn" data-type="answer" data-question-id="${questionId}" data-answer-id="${answerId}" data-action="dislike">
+                <i class="fas fa-thumbs-down"></i> <span class="vote-count">${dislikes}</span>
+              </button>
+            </div>
+            
+            <button class="action-btn report-btn" data-type="answer" data-question-id="${questionId}" data-answer-id="${answerId}">
+              <i class="fas fa-flag"></i> Report
+            </button>
+          </div>
         </div>
       </div>
     `;
@@ -238,7 +263,15 @@ class AnonQAApp {
       btn.addEventListener('click', (e) => this.handleShare(e));
     });
 
-    // Note: Vote and report buttons are disabled since backend doesn't support them yet
+    // Vote buttons (like/dislike)
+    document.querySelectorAll('.vote-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => this.handleVote(e));
+    });
+
+    // Report buttons
+    document.querySelectorAll('.report-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => this.handleReportClick(e));
+    });
   }
 
   // Handle question form submission
@@ -334,17 +367,145 @@ class AnonQAApp {
     }
   }
 
-  // Handle report form submission (disabled - backend doesn't support reporting yet)
-  handleReportSubmit(e) {
+  // Handle report form submission
+  async handleReportSubmit(e) {
     e.preventDefault();
-    UIUtils.showToast('Reporting feature is not available yet.', 'info');
-    this.hideReportModal();
+    
+    const formData = new FormData(e.target);
+    const reportData = {
+      type: this.currentReportType,
+      id: this.currentReportId,
+      reason: formData.get('reason'),
+      details: formData.get('details') || ''
+    };
+    
+    // Validate required fields
+    if (!reportData.reason) {
+      UIUtils.showToast('Please select a reason for reporting.', 'error');
+      return;
+    }
+    
+    try {
+      const response = await QuestionAPI.submitReport(reportData);
+      
+      UIUtils.showToast(response.message || 'Report submitted successfully. Thank you for helping keep our community safe.', 'success');
+      this.hideReportModal();
+      
+      // Reset form
+      e.target.reset();
+      
+      // Track analytics
+      AnalyticsUtils.trackAction('content_reported', { 
+        type: reportData.type, 
+        reason: reportData.reason 
+      });
+      
+    } catch (error) {
+      console.error('Report submission failed:', error);
+      UIUtils.showToast('Failed to submit report. Please try again later.', 'error');
+    }
   }
 
-  // Handle voting (disabled - backend doesn't support voting yet)
-  handleVote(e) {
+  // Update vote counts for a question in the UI
+  updateQuestionVoteCounts(questionId, likes, dislikes) {
+    const questionCard = document.querySelector(`[data-question-id="${questionId}"]`);
+    if (!questionCard) return;
+    
+    const likeCountElement = questionCard.querySelector('.like-btn .vote-count');
+    const dislikeCountElement = questionCard.querySelector('.dislike-btn .vote-count');
+    
+    if (likeCountElement) likeCountElement.textContent = likes;
+    if (dislikeCountElement) dislikeCountElement.textContent = dislikes;
+    
+    // Update cached question data
+    const questionIndex = this.questions.findIndex(q => q._id === questionId);
+    if (questionIndex !== -1) {
+      this.questions[questionIndex].likes = likes;
+      this.questions[questionIndex].dislikes = dislikes;
+    }
+  }
+
+  // Update vote counts for an answer in the UI
+  updateAnswerVoteCounts(answerId, likes, dislikes) {
+    const answerCard = document.querySelector(`[data-answer-id="${answerId}"]`);
+    if (!answerCard) return;
+    
+    const likeCountElement = answerCard.querySelector('.like-btn .vote-count');
+    const dislikeCountElement = answerCard.querySelector('.dislike-btn .vote-count');
+    
+    if (likeCountElement) likeCountElement.textContent = likes;
+    if (dislikeCountElement) dislikeCountElement.textContent = dislikes;
+    
+    // Update cached answer data
+    for (let question of this.questions) {
+      const answerIndex = question.answers.findIndex(a => a._id === answerId);
+      if (answerIndex !== -1) {
+        question.answers[answerIndex].likes = likes;
+        question.answers[answerIndex].dislikes = dislikes;
+        break;
+      }
+    }
+  }
+
+  // Handle voting (like/dislike) for questions and answers
+  async handleVote(e) {
     e.preventDefault();
-    UIUtils.showToast('Voting feature is not available yet.', 'info');
+    
+    const btn = e.currentTarget;
+    const type = btn.dataset.type; // 'question' or 'answer'
+    const action = btn.dataset.action; // 'like' or 'dislike'
+    const questionId = btn.dataset.questionId;
+    const answerId = btn.dataset.answerId;
+    
+    // Prevent double-clicking
+    if (btn.disabled) return;
+    btn.disabled = true;
+    
+    try {
+      let response;
+      
+      // Call appropriate API method based on type and action
+      if (type === 'question') {
+        if (action === 'like') {
+          response = await QuestionAPI.likeQuestion(questionId);
+        } else {
+          response = await QuestionAPI.dislikeQuestion(questionId);
+        }
+        
+        // Update the UI for question votes
+        this.updateQuestionVoteCounts(questionId, response.likes, response.dislikes);
+        
+      } else if (type === 'answer') {
+        if (action === 'like') {
+          response = await QuestionAPI.likeAnswer(questionId, answerId);
+        } else {
+          response = await QuestionAPI.dislikeAnswer(questionId, answerId);
+        }
+        
+        // Update the UI for answer votes
+        this.updateAnswerVoteCounts(answerId, response.likes, response.dislikes);
+      }
+      
+      // Show success message
+      UIUtils.showToast(response.message || `${action.charAt(0).toUpperCase() + action.slice(1)} recorded!`, 'success');
+      
+      // Track analytics
+      AnalyticsUtils.trackAction('vote_cast', { 
+        type, 
+        action, 
+        questionId, 
+        answerId: answerId || null 
+      });
+      
+    } catch (error) {
+      console.error('Vote failed:', error);
+      UIUtils.showToast('Failed to record vote. Please try again.', 'error');
+    } finally {
+      // Re-enable button after a short delay to prevent spam
+      setTimeout(() => {
+        btn.disabled = false;
+      }, 1000);
+    }
   }
 
   // Handle answer button click
