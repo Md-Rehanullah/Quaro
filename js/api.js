@@ -3,12 +3,10 @@
 
 // API configuration
 const API_CONFIG = {
-  // Base URL for API - adjust for deployment environment
-  // For local development: 'http://localhost:5000'
-  // For production: replace with actual backend URL
-  BASE_URL: 'http://localhost:5000',
+  // Base URL for API - now uses the config from config.js
+  BASE_URL: API_BASE_URL,
   ENDPOINTS: {
-    QUESTIONS: '/api/questions',
+    QUESTIONS: '/questions', // Simplified since API_BASE_URL already includes /api
   }
 };
 
@@ -31,12 +29,18 @@ class API {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorMessage = `HTTP error! status: ${response.status}`;
+        console.error('API GET request failed:', errorMessage);
+        alert(`Failed to load data: ${errorMessage}`);
+        throw new Error(errorMessage);
       }
 
       return await response.json();
     } catch (error) {
       console.error('API GET request failed:', error);
+      // Show user-friendly alert for mobile compatibility
+      const errorMessage = error.message || 'Network error occurred';
+      alert(`Error loading data: ${errorMessage}`);
       throw error;
     }
   }
@@ -58,12 +62,18 @@ class API {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorMessage = `HTTP error! status: ${response.status}`;
+        console.error('API POST request failed:', errorMessage);
+        alert(`Failed to save data: ${errorMessage}`);
+        throw new Error(errorMessage);
       }
 
       return await response.json();
     } catch (error) {
       console.error('API POST request failed:', error);
+      // Show user-friendly alert for mobile compatibility
+      const errorMessage = error.message || 'Network error occurred';
+      alert(`Error saving data: ${errorMessage}`);
       throw error;
     }
   }
