@@ -9,7 +9,9 @@ const app = express();
 const PORT = process.env.PORT || 1000;
 
 // Middlewares
-app.use(cors());
+app.use(cors({
+  origin: 'https://md-rehanullah.github.io'
+}));
 app.use(express.json());
 
 // Routes
