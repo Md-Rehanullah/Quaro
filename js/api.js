@@ -10,7 +10,9 @@ const API_CONFIG = {
   ENDPOINTS: {
     QUESTIONS: '/api/questions',
     REPORT: '/api/report',
-  }
+  },
+  // Enable mock mode for development/testing when API is not available
+  USE_MOCK_DATA: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
 };
 
 /**
@@ -79,6 +81,11 @@ class QuestionAPI {
    * @returns {Promise<Array>} Array of questions
    */
   static async getAllQuestions() {
+    if (API_CONFIG.USE_MOCK_DATA) {
+      // Import and use mock data for development
+      const { MOCK_API } = await import('./mock-data.js');
+      return await MOCK_API.getAllQuestions();
+    }
     return await API.get(API_CONFIG.ENDPOINTS.QUESTIONS);
   }
 
@@ -88,6 +95,10 @@ class QuestionAPI {
    * @returns {Promise<object>} Question object
    */
   static async getQuestionById(questionId) {
+    if (API_CONFIG.USE_MOCK_DATA) {
+      const { MOCK_API } = await import('./mock-data.js');
+      return MOCK_API.questions.find(q => q._id === questionId) || null;
+    }
     return await API.get(`${API_CONFIG.ENDPOINTS.QUESTIONS}/${questionId}`);
   }
 
@@ -97,6 +108,21 @@ class QuestionAPI {
    * @returns {Promise<object>} Created question
    */
   static async createQuestion(questionData) {
+    if (API_CONFIG.USE_MOCK_DATA) {
+      const { MOCK_API } = await import('./mock-data.js');
+      const newQuestion = {
+        _id: 'mock_' + Date.now(),
+        title: questionData.title,
+        details: questionData.details || '',
+        createdAt: new Date().toISOString(),
+        likes: 0,
+        dislikes: 0,
+        answers: []
+      };
+      MOCK_API.questions.unshift(newQuestion);
+      return newQuestion;
+    }
+    
     // Map frontend data to backend format
     const backendData = {
       title: questionData.title,
@@ -113,6 +139,23 @@ class QuestionAPI {
    * @returns {Promise<object>} Updated question with new answer
    */
   static async addAnswer(questionId, answerData) {
+    if (API_CONFIG.USE_MOCK_DATA) {
+      const { MOCK_API } = await import('./mock-data.js');
+      const question = MOCK_API.questions.find(q => q._id === questionId);
+      if (question) {
+        const newAnswer = {
+          _id: 'mock_answer_' + Date.now(),
+          text: answerData.content,
+          createdAt: new Date().toISOString(),
+          likes: 0,
+          dislikes: 0
+        };
+        question.answers.push(newAnswer);
+        return question;
+      }
+      throw new Error('Question not found');
+    }
+    
     // Map frontend data to backend format
     const backendData = {
       text: answerData.content,
@@ -168,6 +211,10 @@ class QuestionAPI {
    * @returns {Promise<object>} Updated vote counts
    */
   static async likeQuestion(questionId) {
+    if (API_CONFIG.USE_MOCK_DATA) {
+      const { MOCK_API } = await import('./mock-data.js');
+      return await MOCK_API.likeQuestion(questionId);
+    }
     return await API.post(`${API_CONFIG.ENDPOINTS.QUESTIONS}/${questionId}/like`);
   }
 
@@ -177,6 +224,10 @@ class QuestionAPI {
    * @returns {Promise<object>} Updated vote counts
    */
   static async dislikeQuestion(questionId) {
+    if (API_CONFIG.USE_MOCK_DATA) {
+      const { MOCK_API } = await import('./mock-data.js');
+      return await MOCK_API.dislikeQuestion(questionId);
+    }
     return await API.post(`${API_CONFIG.ENDPOINTS.QUESTIONS}/${questionId}/dislike`);
   }
 
@@ -187,6 +238,10 @@ class QuestionAPI {
    * @returns {Promise<object>} Updated vote counts
    */
   static async likeAnswer(questionId, answerId) {
+    if (API_CONFIG.USE_MOCK_DATA) {
+      const { MOCK_API } = await import('./mock-data.js');
+      return await MOCK_API.likeAnswer(questionId, answerId);
+    }
     return await API.post(`${API_CONFIG.ENDPOINTS.QUESTIONS}/${questionId}/answers/${answerId}/like`);
   }
 
@@ -197,6 +252,10 @@ class QuestionAPI {
    * @returns {Promise<object>} Updated vote counts
    */
   static async dislikeAnswer(questionId, answerId) {
+    if (API_CONFIG.USE_MOCK_DATA) {
+      const { MOCK_API } = await import('./mock-data.js');
+      return await MOCK_API.dislikeAnswer(questionId, answerId);
+    }
     return await API.post(`${API_CONFIG.ENDPOINTS.QUESTIONS}/${questionId}/answers/${answerId}/dislike`);
   }
 
@@ -206,6 +265,10 @@ class QuestionAPI {
    * @returns {Promise<object>} Report submission response
    */
   static async submitReport(reportData) {
+    if (API_CONFIG.USE_MOCK_DATA) {
+      const { MOCK_API } = await import('./mock-data.js');
+      return await MOCK_API.submitReport(reportData);
+    }
     return await API.post(API_CONFIG.ENDPOINTS.REPORT, reportData);
   }
 }
