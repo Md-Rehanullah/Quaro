@@ -6,7 +6,7 @@ const API_CONFIG = {
   // Base URL for API - adjust for deployment environment
   // For local development: 'http://localhost:5000'
   // For production: replace with actual backend URL
-  BASE_URL: 'http://localhost:5000',
+  BASE_URL: 'https://quaro-1.onrender.com', // <-- UPDATED HERE
   ENDPOINTS: {
     QUESTIONS: '/api/questions',
   }
