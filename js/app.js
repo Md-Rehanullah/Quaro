@@ -1,32 +1,32 @@
 // Main Application Controller for AnonQ&A Platform
+// Import API functions for backend communication
+import { QuestionAPI } from './api.js';
+
 class AnonQAApp {
   constructor() {
-    this.storage = new StorageManager();
+    // Replace StorageManager with API-based data management
+    this.api = QuestionAPI;
     this.currentSort = 'trending';
     this.currentCategory = '';
     this.currentQuestionId = null;
+    this.questions = []; // Cache questions locally for UI operations
     
     this.init();
   }
 
   // Initialize the application
-  init() {
+  async init() {
     this.bindEvents();
-    this.loadQuestions();
+    await this.loadQuestions(); // Load questions from backend API
     this.setupMobileNavigation();
     this.trackPageView();
-    
-    // Load seed data if no questions exist
-    if (this.storage.getQuestions().length === 0) {
-      this.loadSeedData();
-    }
   }
 
   // Bind all event listeners
   bindEvents() {
     // Navigation events
-    document.addEventListener('DOMContentLoaded', () => {
-      this.loadQuestions();
+    document.addEventListener('DOMContentLoaded', async () => {
+      await this.loadQuestions();
     });
 
     // Question form submission
@@ -50,9 +50,9 @@ class AnonQAApp {
     // Filter and sort events
     const categoryFilter = document.getElementById('categoryFilter');
     if (categoryFilter) {
-      categoryFilter.addEventListener('change', (e) => {
+      categoryFilter.addEventListener('change', async (e) => {
         this.currentCategory = e.target.value;
-        this.loadQuestions();
+        await this.loadQuestions();
       });
     }
 
@@ -99,43 +99,65 @@ class AnonQAApp {
   }
 
   // Load and display questions
-  loadQuestions() {
+  // Load and display questions from backend API
+  async loadQuestions() {
     const questionsContainer = document.getElementById('questionsContainer');
     const emptyState = document.getElementById('emptyState');
     
     if (!questionsContainer) return;
 
-    const questions = this.storage.getFilteredQuestions(this.currentCategory, this.currentSort);
-    
-    if (questions.length === 0) {
-      questionsContainer.style.display = 'none';
-      if (emptyState) emptyState.style.display = 'block';
-      return;
-    }
+    try {
+      // Show loading state
+      questionsContainer.innerHTML = '<div class="loading">Loading questions...</div>';
+      
+      // Fetch questions from backend API
+      const allQuestions = await this.api.getAllQuestions();
+      
+      // Filter and sort questions
+      this.questions = this.api.filterAndSortQuestions(allQuestions, this.currentCategory, this.currentSort);
+      
+      if (this.questions.length === 0) {
+        questionsContainer.style.display = 'none';
+        if (emptyState) emptyState.style.display = 'block';
+        return;
+      }
 
-    questionsContainer.style.display = 'block';
-    if (emptyState) emptyState.style.display = 'none';
-    
-    questionsContainer.innerHTML = questions.map(question => this.renderQuestion(question)).join('');
-    
-    // Bind question-specific events
-    this.bindQuestionEvents();
+      questionsContainer.style.display = 'block';
+      if (emptyState) emptyState.style.display = 'none';
+      
+      questionsContainer.innerHTML = this.questions.map(question => this.renderQuestion(question)).join('');
+      
+      // Bind question-specific events
+      this.bindQuestionEvents();
+      
+    } catch (error) {
+      console.error('Error loading questions:', error);
+      questionsContainer.innerHTML = '<div class="error">Failed to load questions. Please refresh the page.</div>';
+      UIUtils.showToast('Failed to load questions. Please check your connection.', 'error');
+    }
   }
 
   // Render a single question
   renderQuestion(question) {
-    const categoryInfo = CategoryUtils.getCategoryInfo(question.category);
-    const answers = this.storage.getAnswersByQuestionId(question.id);
-    const userVote = this.storage.getUserVote('question', question.id);
+    // Backend uses different field names, map them appropriately
+    const questionId = question._id;
+    const answers = question.answers || [];
+    
+    // Since backend doesn't store category, use a default one
+    const categoryInfo = CategoryUtils.getCategoryInfo('general');
+    
+    // Backend doesn't store voting data, so we'll disable votes for now
+    // This could be enhanced later with a proper voting system
+    const userVote = null;
     
     return `
-      <div class="question-card" data-question-id="${question.id}">
+      <div class="question-card" data-question-id="${questionId}">
         <div class="question-header">
           <div class="question-meta">
             <span class="category-tag" style="background-color: ${categoryInfo.color}">
               <i class="${categoryInfo.icon}"></i> ${categoryInfo.name}
             </span>
-            <span class="question-time">${TimeUtils.getRelativeTime(question.timestamp)}</span>
+            <span class="question-time">${TimeUtils.getRelativeTime(question.createdAt)}</span>
           </div>
         </div>
         
@@ -148,30 +170,23 @@ class AnonQAApp {
         ` : ''}
         
         <div class="question-actions">
-          <button class="action-btn vote-btn ${userVote === 'like' ? 'liked' : ''}" 
-                  data-action="like" data-question-id="${question.id}">
-            <i class="fas fa-thumbs-up"></i> ${question.likes}
-          </button>
+          <!-- Voting disabled for now since backend doesn't support it -->
+          <span class="action-info">
+            <i class="fas fa-comments"></i> ${answers.length} Answer${answers.length !== 1 ? 's' : ''}
+          </span>
           
-          <button class="action-btn vote-btn ${userVote === 'dislike' ? 'disliked' : ''}" 
-                  data-action="dislike" data-question-id="${question.id}">
-            <i class="fas fa-thumbs-down"></i> ${question.dislikes}
-          </button>
-          
-          <button class="action-btn answer-btn" data-question-id="${question.id}">
+          <button class="action-btn answer-btn" data-question-id="${questionId}">
             <i class="fas fa-reply"></i> Answer
           </button>
           
-          <button class="action-btn share-btn" data-question-id="${question.id}">
+          <button class="action-btn share-btn" data-question-id="${questionId}">
             <i class="fas fa-share"></i> Share
           </button>
           
-          <button class="action-btn report-btn" data-question-id="${question.id}" data-type="question">
-            <i class="fas fa-flag"></i> Report
-          </button>
+          <!-- Reporting disabled for now since backend doesn't support it -->
         </div>
         
-        ${answers.length > 0 ? this.renderAnswersSection(question.id, answers) : ''}
+        ${answers.length > 0 ? this.renderAnswersSection(questionId, answers) : ''}
       </div>
     `;
   }
@@ -193,32 +208,19 @@ class AnonQAApp {
 
   // Render a single answer
   renderAnswer(answer) {
-    const userVote = this.storage.getUserVote('answer', answer.id);
+    // Backend answer format uses _id and different field names
+    const answerId = answer._id;
     
     return `
-      <div class="answer-card" data-answer-id="${answer.id}">
+      <div class="answer-card" data-answer-id="${answerId}">
         <div class="answer-content">
-          ${TextUtils.sanitizeHtml(answer.content)}
+          ${TextUtils.sanitizeHtml(answer.text)}
         </div>
         
         <div class="answer-meta">
-          <span class="answer-time">${TimeUtils.getRelativeTime(answer.timestamp)}</span>
+          <span class="answer-time">${TimeUtils.getRelativeTime(answer.createdAt)}</span>
           
-          <div class="answer-actions">
-            <button class="action-btn vote-btn ${userVote === 'like' ? 'liked' : ''}" 
-                    data-action="like" data-answer-id="${answer.id}">
-              <i class="fas fa-thumbs-up"></i> ${answer.likes}
-            </button>
-            
-            <button class="action-btn vote-btn ${userVote === 'dislike' ? 'disliked' : ''}" 
-                    data-action="dislike" data-answer-id="${answer.id}">
-              <i class="fas fa-thumbs-down"></i> ${answer.dislikes}
-            </button>
-            
-            <button class="action-btn report-btn" data-answer-id="${answer.id}" data-type="answer">
-              <i class="fas fa-flag"></i> Report
-            </button>
-          </div>
+          <!-- Answer voting and reporting disabled for now since backend doesn't support it -->
         </div>
       </div>
     `;
@@ -226,11 +228,6 @@ class AnonQAApp {
 
   // Bind events for questions and answers
   bindQuestionEvents() {
-    // Vote buttons
-    document.querySelectorAll('.vote-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => this.handleVote(e));
-    });
-
     // Answer buttons
     document.querySelectorAll('.answer-btn').forEach(btn => {
       btn.addEventListener('click', (e) => this.handleAnswerClick(e));
@@ -241,14 +238,12 @@ class AnonQAApp {
       btn.addEventListener('click', (e) => this.handleShare(e));
     });
 
-    // Report buttons
-    document.querySelectorAll('.report-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => this.handleReportClick(e));
-    });
+    // Note: Vote and report buttons are disabled since backend doesn't support them yet
   }
 
   // Handle question form submission
-  handleQuestionSubmit(e) {
+  // Handle question form submission
+  async handleQuestionSubmit(e) {
     e.preventDefault();
     
     const formData = new FormData(e.target);
@@ -273,16 +268,17 @@ class AnonQAApp {
     }
 
     try {
-      const question = this.storage.saveQuestion(questionData);
+      // Save question to backend API
+      const question = await this.api.createQuestion(questionData);
       AnalyticsUtils.trackAction('question_posted', { category: questionData.category });
       
       UIUtils.showToast('Question posted successfully!', 'success');
       this.hideAskModal();
-      this.loadQuestions();
+      await this.loadQuestions(); // Reload questions from backend
       
       // Scroll to the new question
       setTimeout(() => {
-        const questionElement = document.querySelector(`[data-question-id="${question.id}"]`);
+        const questionElement = document.querySelector(`[data-question-id="${question._id}"]`);
         if (questionElement) {
           UIUtils.scrollToElement(questionElement, 100);
         }
@@ -295,7 +291,7 @@ class AnonQAApp {
   }
 
   // Handle answer form submission
-  handleAnswerSubmit(e) {
+  async handleAnswerSubmit(e) {
     e.preventDefault();
     
     if (!this.currentQuestionId) {
@@ -324,12 +320,13 @@ class AnonQAApp {
     }
 
     try {
-      this.storage.saveAnswer(answerData);
+      // Save answer to backend API
+      await this.api.addAnswer(this.currentQuestionId, answerData);
       AnalyticsUtils.trackAction('answer_posted', { questionId: this.currentQuestionId });
       
       UIUtils.showToast('Answer posted successfully!', 'success');
       this.hideAnswerModal();
-      this.loadQuestions();
+      await this.loadQuestions(); // Reload questions from backend
       
     } catch (error) {
       console.error('Error saving answer:', error);
@@ -337,75 +334,25 @@ class AnonQAApp {
     }
   }
 
-  // Handle report form submission
+  // Handle report form submission (disabled - backend doesn't support reporting yet)
   handleReportSubmit(e) {
     e.preventDefault();
-    
-    const formData = new FormData(e.target);
-    const reportData = {
-      itemType: this.currentReportType,
-      itemId: this.currentReportId,
-      reason: formData.get('reason'),
-      details: formData.get('details')
-    };
-
-    if (!reportData.reason) {
-      UIUtils.showToast('Please select a reason for reporting.', 'error');
-      return;
-    }
-
-    try {
-      this.storage.saveReport(reportData);
-      AnalyticsUtils.trackAction('content_reported', { 
-        type: reportData.itemType, 
-        reason: reportData.reason 
-      });
-      
-      UIUtils.showToast('Content reported successfully. Thank you for helping maintain our community.', 'success');
-      this.hideReportModal();
-      
-    } catch (error) {
-      console.error('Error saving report:', error);
-      UIUtils.showToast('Failed to submit report. Please try again.', 'error');
-    }
+    UIUtils.showToast('Reporting feature is not available yet.', 'info');
+    this.hideReportModal();
   }
 
-  // Handle voting
+  // Handle voting (disabled - backend doesn't support voting yet)
   handleVote(e) {
-    const btn = e.currentTarget;
-    const action = btn.dataset.action; // 'like' or 'dislike'
-    const questionId = btn.dataset.questionId;
-    const answerId = btn.dataset.answerId;
-
-    const hideLoading = UIUtils.showLoading(btn);
-
-    try {
-      let result;
-      if (questionId) {
-        result = this.storage.voteOnQuestion(questionId, action);
-        AnalyticsUtils.trackAction('question_voted', { questionId, action });
-      } else if (answerId) {
-        result = this.storage.voteOnAnswer(answerId, action);
-        AnalyticsUtils.trackAction('answer_voted', { answerId, action });
-      }
-
-      if (result) {
-        this.loadQuestions();
-        UIUtils.showToast('Vote recorded!', 'success', 1500);
-      }
-      
-    } catch (error) {
-      console.error('Error voting:', error);
-      UIUtils.showToast('Failed to record vote. Please try again.', 'error');
-    } finally {
-      hideLoading();
-    }
+    e.preventDefault();
+    UIUtils.showToast('Voting feature is not available yet.', 'info');
   }
 
   // Handle answer button click
   handleAnswerClick(e) {
     const questionId = e.currentTarget.dataset.questionId;
-    const question = this.storage.getQuestionById(questionId);
+    
+    // Find question in our cached questions array
+    const question = this.questions.find(q => q._id === questionId);
     
     if (!question) {
       UIUtils.showToast('Question not found', 'error');
@@ -421,7 +368,9 @@ class AnonQAApp {
   // Handle share button click
   handleShare(e) {
     const questionId = e.currentTarget.dataset.questionId;
-    const question = this.storage.getQuestionById(questionId);
+    
+    // Find question in our cached questions array
+    const question = this.questions.find(q => q._id === questionId);
     
     if (!question) {
       UIUtils.showToast('Question not found', 'error');
@@ -446,7 +395,7 @@ class AnonQAApp {
   }
 
   // Switch between trending and latest tabs
-  switchTab(tabBtn, sortType) {
+  async switchTab(tabBtn, sortType) {
     // Update active tab
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.classList.remove('active');
@@ -454,17 +403,17 @@ class AnonQAApp {
     tabBtn.classList.add('active');
     
     this.currentSort = sortType;
-    this.loadQuestions();
+    await this.loadQuestions();
     
     AnalyticsUtils.trackAction('tab_switched', { sortType });
   }
 
   // Filter questions by category
-  filterQuestions() {
+  async filterQuestions() {
     const categoryFilter = document.getElementById('categoryFilter');
     if (categoryFilter) {
       this.currentCategory = categoryFilter.value;
-      this.loadQuestions();
+      await this.loadQuestions();
       
       AnalyticsUtils.trackAction('questions_filtered', { category: this.currentCategory });
     }
@@ -550,40 +499,6 @@ class AnonQAApp {
     this.hideReportModal();
   }
 
-  // Load seed data for demonstration
-  loadSeedData() {
-    const seedQuestions = [
-      {
-        title: "What are the best practices for learning JavaScript in 2024?",
-        details: "I'm a beginner looking to learn JavaScript effectively. What resources, methods, and projects would you recommend for someone starting out?",
-        category: "technology"
-      },
-      {
-        title: "How can I maintain work-life balance while working remotely?",
-        details: "Since switching to remote work, I'm struggling to separate my personal and professional life. Any tips?",
-        category: "lifestyle"
-      },
-      {
-        title: "What are some effective study techniques for retaining information?",
-        details: "I'm preparing for important exams and want to optimize my study sessions. What methods have worked best for you?",
-        category: "education"
-      }
-    ];
-
-    seedQuestions.forEach(questionData => {
-      const question = this.storage.saveQuestion(questionData);
-      
-      // Add some sample answers
-      if (Math.random() > 0.5) {
-        this.storage.saveAnswer({
-          questionId: question.id,
-          content: "Great question! Here's what has worked for me..."
-        });
-      }
-    });
-
-    this.loadQuestions();
-  }
 }
 
 // Global functions for HTML event handlers
@@ -626,12 +541,8 @@ document.addEventListener('visibilitychange', function() {
 
 // Handle before unload for potential data backup
 window.addEventListener('beforeunload', function(e) {
-  // Could implement auto-backup functionality here
-  const stats = window.app ? window.app.storage.getStats() : null;
-  if (stats && stats.totalQuestions > 10) {
-    // Optional: warn users with significant data
-    // e.returnValue = 'You have questions and answers stored locally. Are you sure you want to leave?';
-  }
+  // Auto-backup functionality removed since we're using backend API now
+  // Could implement auto-sync or warn about unsaved data here if needed
 });
 
 // Service worker registration for PWA capabilities (optional)
@@ -648,7 +559,7 @@ window.addEventListener('online', function() {
 });
 
 window.addEventListener('offline', function() {
-  UIUtils.showToast('You are offline. Your data is saved locally.', 'info', 3000);
+  UIUtils.showToast('You are offline. Some features may not work.', 'warning', 3000);
 });
 
 // Export for potential testing
